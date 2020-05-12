@@ -1,3 +1,6 @@
+import random
+from util import Queue
+
 class User:
     def __init__(self, name):
         self.name = name
@@ -43,10 +46,18 @@ class SocialGraph:
         self.users = {}
         self.friendships = {}
         # !!!! IMPLEMENT ME
-
+        for i in range(0, num_users):
+            self.add_user(f"User {i}")
         # Add users
-
+        possible_friendships = []
+        for user_id in self.users:
+            for friend_id in range(user_id + 1, self.last_id + 1):
+                possible_friendships.append((user_id, friend_id))
+        random.shuffle(possible_friendships)
         # Create friendships
+        for i in range(num_users * avg_friendships // 2):
+            friendship = possible_friendships[i]
+            self.add_friendship(friendship[0], friendship[1])
 
     def get_all_social_paths(self, user_id):
         """
@@ -58,8 +69,32 @@ class SocialGraph:
         The key is the friend's ID and the value is the path.
         """
         visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+        visited = self.bft(user_id)
         return visited
+
+    def bft(self, start):
+        v = set()
+        q = Queue()
+        path = [start]
+        paths = {}
+
+        q.enqueue([start])
+        while q.size() > 0:
+            path = q.dequeue()
+            end = path[-1]
+            if end not in v:
+                paths[end] = path
+                # print(end, path)  # instead of printing I want to do a bfs
+                paths[end] = path
+                v.add(end)
+                for neighbor in self.friendships[end]:
+                    if neighbor not in v:
+                        new_path = path.copy() + [neighbor]
+                        q.enqueue(new_path)
+        return paths
+
+    # def bfs(self, start, finish):
+
 
 
 if __name__ == '__main__':
@@ -68,3 +103,7 @@ if __name__ == '__main__':
     print(sg.friendships)
     connections = sg.get_all_social_paths(1)
     print(connections)
+
+
+{1: {9, 2, 3, XXX7}, 2: {1, 3}, 3: {1, 10, 2}, 4: {10}, 5: {10}, 6: {8}, 7: {1}, 8: {10, 6}, 9: {1}, 10: {8, 3, 4, 5}}
+{1: [1], 9: [1, 9], 2: [1, 2], 3: [1, 3], 7: [1, 7], 10: [1, 3, 10], 8: [1, 3, 10, 8], 4: [1, 3, 10, 4], 5: [1, 3, 10, 5], 6: [1, 3, 10, 8, 6]}
