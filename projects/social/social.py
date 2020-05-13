@@ -49,6 +49,13 @@ class SocialGraph:
         for i in range(0, num_users):
             self.add_user(f"User {i}")
         # Add users
+        #
+        # for user_id in self.users:
+        #     users_copy = self.users.copy()
+        #     del users_copy[user_id]
+        #     num = random.randint(0,num_users-1)
+        #     friend = f"User {num}"
+
         possible_friendships = []
         for user_id in self.users:
             for friend_id in range(user_id + 1, self.last_id + 1):
@@ -69,26 +76,42 @@ class SocialGraph:
         The key is the friend's ID and the value is the path.
         """
         visited = {}  # Note that this is a dictionary, not a set
-        visited = self.bft(user_id)
+        visited = self.fbft(user_id)
         return visited
 
-    def bft(self, start):
-        v = set()
+    # def bft(self, start):
+    #     v = set()
+    #     q = Queue()
+    #     path = [start]
+    #     paths = {}
+    #
+    #     q.enqueue([start])
+    #     while q.size() > 0:
+    #         path = q.dequeue()
+    #         end = path[-1]
+    #         if end not in v:
+    #             paths[end] = path
+    #             # print(end, path)  # instead of printing I want to do a bfs
+    #             paths[end] = path
+    #             v.add(end)
+    #             for neighbor in self.friendships[end]:
+    #                 if neighbor not in v:
+    #                     new_path = path.copy() + [neighbor]
+    #                     q.enqueue(new_path)
+    #     return paths
+
+    def fbft(self, start):
         q = Queue()
-        path = [start]
         paths = {}
 
         q.enqueue([start])
         while q.size() > 0:
             path = q.dequeue()
             end = path[-1]
-            if end not in v:
+            if end not in paths:
                 paths[end] = path
-                # print(end, path)  # instead of printing I want to do a bfs
-                paths[end] = path
-                v.add(end)
                 for neighbor in self.friendships[end]:
-                    if neighbor not in v:
+                    if neighbor not in paths:
                         new_path = path.copy() + [neighbor]
                         q.enqueue(new_path)
         return paths
@@ -99,11 +122,13 @@ class SocialGraph:
 
 if __name__ == '__main__':
     sg = SocialGraph()
-    sg.populate_graph(10, 2)
+    sg.populate_graph(1000, 5)
     print(sg.friendships)
-    connections = sg.get_all_social_paths(1)
+    connections = sg.get_all_social_paths(3)
     print(connections)
+    print(f"Users in extended social network: {len(connections)-1}")
 
-
-{1: {9, 2, 3, XXX7}, 2: {1, 3}, 3: {1, 10, 2}, 4: {10}, 5: {10}, 6: {8}, 7: {1}, 8: {10, 6}, 9: {1}, 10: {8, 3, 4, 5}}
-{1: [1], 9: [1, 9], 2: [1, 2], 3: [1, 3], 7: [1, 7], 10: [1, 3, 10], 8: [1, 3, 10, 8], 4: [1, 3, 10, 4], 5: [1, 3, 10, 5], 6: [1, 3, 10, 8, 6]}
+    total_social_paths = 0
+    for user_id in connections:
+        total_social_paths += len(connections[user_id])
+    print(f"Avg length of social path: {total_social_paths / len(connections)}")
